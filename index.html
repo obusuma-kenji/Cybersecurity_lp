@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>情報セキュリティ対策</title>
+<meta name="description" content="2026年秋の情報漏えい事件をきっかけに、IT用語・メール・バックアップ・被害時の初動・今日からやることを、会社の日常に例えて全8章で解説します。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Old+Mincho:wght@700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 回覧板のように読み進める全8章のLP。上部の回覧板に章ごとの確認印がたまり、章の中は短い本文＋スライド・タブ・○×クイズで区切る。明るい背景のみ。 */
+:root{
+  --paper:#F3F5F9; --surface:#FFFFFF; --ink:#18202D; --muted:#566074; --line:#D8DDE7;
+  --ai:#2B4A84; --ai-deep:#1F3766; --ai-soft:#E6ECF7; --on-ai:#FFFFFF;
+  --shu:#B3341F; --shu-soft:#F7E5E0; --good:#2E7048; --good-soft:#E3F1E8;
+  --font-display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+  --font-body:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Meiryo",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --gutter-l:max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r:max(16px, env(safe-area-inset-right, 0px));
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.85}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:30;background:var(--surface)}
+a{color:var(--ai)}
+:focus-visible{outline:3px solid var(--ai);outline-offset:2px}
+p{margin:0}
+h1,h2,h3{margin:0;font-family:var(--font-display);font-weight:900;text-wrap:balance;line-height:1.4}
+.gut{padding-left:var(--gutter-l);padding-right:var(--gutter-r)}
+.wrap{max-width:1040px;margin:0 auto}
+.narrow{max-width:46em}
+.eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.14em;color:var(--ai)}
+.muted{color:var(--muted)}
+.note{font-size:.84rem;color:var(--muted)}
+strong,b{font-weight:700}
+
+/* sticky header + 回覧板 */
+.topbar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:14px;min-height:56px}
+.brand{font-family:var(--font-display);font-weight:900;font-size:1rem;white-space:nowrap;color:var(--ink);text-decoration:none}
+.kairan{display:flex;align-items:center;gap:6px;margin-left:auto}
+.kairan-lbl{font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--muted);white-space:nowrap}
+.cell{position:relative;width:30px;height:30px;border:1.5px solid var(--line);border-radius:4px;background:var(--surface);font:500 .74rem var(--font-mono);color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
+.cell:hover{border-color:var(--ai)}
+.cell.done{border-color:var(--shu);color:transparent}
+.cell.done::after{content:"済";position:absolute;inset:3px;border:2px solid var(--shu);border-radius:50%;color:var(--shu);font:700 .72rem/1 var(--font-display);display:grid;place-items:center;transform:rotate(-12deg)}
+.cell.here{box-shadow:0 0 0 2px var(--ai-soft)}
+.progress{height:3px;background:var(--ai-soft)}
+.progress span{display:block;height:100%;width:0;background:var(--ai);transition:width .15s linear}
+@media (max-width:560px){.brand{display:none}.kairan{margin-left:0}.cell{width:28px;height:28px}.kairan{gap:5px}}
+
+/* hero */
+.hero{background:var(--surface);border-bottom:1px solid var(--line)}
+.hero .wrap{padding-block:44px 48px;display:grid;gap:36px}
+@media (min-width:900px){.hero .wrap{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}}
+.hero h1{font-size:clamp(2.2rem,6.5vw,3.6rem);line-height:1.2;margin-top:10px}
+.hero .tag{font-size:clamp(1.05rem,2.6vw,1.25rem);font-family:var(--font-display);font-weight:700;margin-top:16px;line-height:1.6}
+.hero .lead{margin-top:18px;max-width:34em;color:var(--muted)}
+.hero .start{display:inline-flex;align-items:center;gap:10px;margin-top:24px;background:var(--ai);color:var(--on-ai);font-weight:700;text-decoration:none;padding:13px 22px;border-radius:10px}
+.hero .start:hover{background:var(--ai-deep)}
+.asof{display:inline-block;margin-top:14px;font-size:.8rem;color:var(--muted)}
+.board{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:18px 18px 14px;display:grid;gap:8px}
+.board-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.board-head h2{font-size:1.15rem}
+.board-head span{font-size:.8rem;color:var(--muted)}
+.row{display:grid;grid-template-columns:3.4em minmax(0,1fr) auto 40px;gap:10px;align-items:center;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink)}
+.row:hover{border-color:var(--ai)}
+.row .no{font:500 .78rem var(--font-mono);color:var(--ai)}
+.row .t{font-size:.95rem;line-height:1.45;min-width:0}
+.row .min{font:500 .74rem var(--font-mono);color:var(--muted);white-space:nowrap}
+.row .stamp{width:34px;height:34px;border:1.5px dashed var(--line);border-radius:50%;display:grid;place-items:center;font:700 .8rem var(--font-display);color:transparent}
+.row.done .stamp{border:2px solid var(--shu);color:var(--shu);transform:rotate(-12deg)}
+.board-foot{font-size:.82rem;color:var(--muted);padding-top:4px}
+
+/* chapter */
+.chapter{scroll-margin-top:72px}
+.chapter:nth-of-type(even){background:var(--surface)}
+.chapter > .wrap{padding-block:56px 48px;display:grid;gap:28px}
+.ch-head{display:grid;gap:10px;max-width:46em}
+.ch-meta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.ch-no{font:500 .86rem var(--font-mono);letter-spacing:.06em;color:var(--on-ai);background:var(--ai);padding:2px 10px;border-radius:4px}
+.ch-time{font:500 .78rem var(--font-mono);color:var(--muted)}
+.ch-head h2{font-size:clamp(1.55rem,4.2vw,2.15rem)}
+.ch-learn{font-size:.95rem;color:var(--muted)}
+.ch-learn b{color:var(--ink)}
+.block{display:grid;gap:14px;max-width:46em}
+.block h3{font-size:1.2rem}
+.wide{max-width:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px clamp(16px,3vw,24px);display:grid;gap:12px;align-content:start;min-width:0}
+.chapter:nth-of-type(even) .panel{background:var(--paper)}
+.grid3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));align-items:start}
+.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));align-items:start}
+.pill{display:inline-block;font-size:.74rem;font-weight:700;padding:1px 9px;border-radius:4px;background:var(--shu-soft);color:var(--shu);width:max-content}
+.lesson{background:var(--shu-soft);border-radius:10px;padding:10px 12px;font-size:.93rem}
+.lesson b{color:var(--shu)}
+ul.list,ol.list{margin:0;padding-left:1.3em;display:grid;gap:8px}
+.callout{border-left:0;background:var(--ai-soft);border-radius:12px;padding:16px 18px}
+.big-line{font-family:var(--font-display);font-weight:900;font-size:clamp(1.2rem,3.2vw,1.5rem);line-height:1.5}
+
+/* next */
+.next{display:flex;justify-content:space-between;align-items:center;gap:14px;text-decoration:none;background:var(--ai);color:var(--on-ai);border-radius:12px;padding:16px 20px;max-width:46em}
+.next:hover{background:var(--ai-deep)}
+.next small{display:block;font-size:.78rem;opacity:.85}
+.next span.t{font-family:var(--font-display);font-weight:700;font-size:1.08rem;line-height:1.45}
+.next .arrow{font-size:1.4rem;flex-shrink:0}
+
+/* incident cards */
+.inc h3{font-size:1.12rem;line-height:1.5}
+
+/* quiz */
+.quiz{background:var(--surface);border:2px solid var(--ai);border-radius:14px;padding:18px clamp(16px,3vw,22px);display:grid;gap:12px;max-width:46em}
+.chapter:nth-of-type(even) .quiz{background:var(--paper)}
+.quiz .q-lbl{font:500 .78rem var(--font-mono);letter-spacing:.08em;color:var(--ai)}
+.quiz .q{font-family:var(--font-display);font-weight:700;font-size:1.12rem;line-height:1.55}
+.quiz .btns{display:flex;gap:10px}
+.quiz button{font:700 1.3rem var(--font-body);width:64px;height:52px;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.quiz button:hover{border-color:var(--ai)}
+.quiz button[aria-pressed="true"]{border-color:var(--ai);background:var(--ai-soft)}
+.quiz .ans{border-radius:10px;padding:12px 14px;font-size:.95rem}
+.quiz .ans.ok{background:var(--good-soft)}
+.quiz .ans.ng{background:var(--shu-soft)}
+.quiz .ans b{display:block;margin-bottom:2px}
+.quiz .ans.ok b{color:var(--good)}
+.quiz .ans.ng b{color:var(--shu)}
+
+/* slider */
+.slider{display:grid;gap:12px;min-width:0}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{font:700 .86rem var(--font-body);white-space:nowrap;flex-shrink:0;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ai);border-color:var(--ai);color:var(--on-ai)}
+.track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 2px 6px;overscroll-behavior-x:contain}
+.track::-webkit-scrollbar{display:none}
+.card{flex:0 0 min(86%,360px);scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:10px;align-content:start}
+.chapter:nth-of-type(even) .card{background:var(--paper)}
+.card .c-cat{font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--ai)}
+.card h3{font-size:1.35rem}
+.card .c-en{font:500 .76rem var(--font-mono);color:var(--muted);margin-top:-4px}
+.card .c-like{background:var(--ai-soft);border-radius:10px;padding:10px 12px;font-size:.95rem}
+.card .c-like b{display:block;font-size:.74rem;letter-spacing:.1em;color:var(--ai)}
+.card dl{margin:0;display:grid;gap:8px}
+.card dt{font-size:.74rem;font-weight:700;letter-spacing:.1em;color:var(--muted)}
+.card dd{margin:0;font-size:.95rem}
+.ctrl{display:flex;align-items:center;gap:12px}
+.ctrl button{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font-size:1.1rem;color:var(--ink);cursor:pointer}
+.ctrl button:hover:not(:disabled){border-color:var(--ai);color:var(--ai)}
+.ctrl button:disabled{opacity:.4;cursor:default}
+.ctrl .count{font:500 .86rem var(--font-mono);color:var(--muted);min-width:4.5em;text-align:center}
+.ctrl .hint{font-size:.8rem;color:var(--muted)}
+
+/* details / tables */
+details.more{background:var(--surface);border:1px solid var(--line);border-radius:12px;max-width:none}
+.chapter:nth-of-type(even) details.more{background:var(--paper)}
+details.more summary{cursor:pointer;padding:14px 18px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details.more summary::after{content:"＋";color:var(--ai)}
+details.more[open] summary::after{content:"－"}
+details.more summary::-webkit-details-marker{display:none}
+details.more .inner{padding:0 18px 18px;display:grid;gap:12px}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:560px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-size:.76rem;letter-spacing:.06em;color:var(--muted);background:var(--paper)}
+tr:last-child td{border-bottom:0}
+
+/* osi */
+.osi{display:grid;gap:16px}
+@media (min-width:820px){.osi{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:start}}
+.stack{display:grid;gap:6px}
+.layer{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:10px;align-items:center;text-align:left;padding:10px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.layer .n{font:500 .9rem var(--font-mono);color:var(--ai)}
+.layer .nm{font-weight:700;font-size:.95rem}
+.layer[aria-pressed="true"]{border-color:var(--ai);background:var(--ai-soft)}
+.layer-detail h3{font-size:1.3rem}
+.layer-detail dl{margin:0;display:grid;gap:10px}
+.layer-detail dt{font-size:.74rem;font-weight:700;letter-spacing:.1em;color:var(--muted)}
+.layer-detail dd{margin:0}
+
+/* illustrations */
+.ill{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.ill figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:8px}
+.chapter:nth-of-type(even) .ill figure{background:var(--paper)}
+.ill svg{width:100%;height:auto;display:block}
+.ill figcaption{font-size:.9rem}
+.ill figcaption b{font-family:var(--font-display);font-size:1.05rem;display:block}
+
+/* 3-2-1 */
+.rule{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+.rule div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+.chapter:nth-of-type(even) .rule div{background:var(--paper)}
+.rule .num{font-family:var(--font-display);font-weight:900;font-size:3rem;line-height:1;color:var(--ai)}
+.motto{background:var(--ai);color:var(--on-ai);border-radius:14px;padding:20px 22px;display:grid;gap:6px;max-width:46em}
+.motto .m{font-family:var(--font-display);font-weight:900;font-size:clamp(1.25rem,3.4vw,1.6rem);line-height:1.5;display:flex;flex-wrap:wrap;gap:4px 18px}
+.motto small{font-size:.78rem;opacity:.85}
+
+/* response tabs */
+.rtabs{display:grid;gap:12px}
+.rpanel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px clamp(16px,3vw,24px);display:grid;gap:14px}
+.chapter:nth-of-type(even) .rpanel{background:var(--paper)}
+.rpanel .cols{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.rpanel h4{margin:0 0 6px;font-size:.8rem;letter-spacing:.1em;color:var(--muted)}
+
+/* checklist */
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.checks label{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.chapter:nth-of-type(even) .checks label{background:var(--paper)}
+.checks input{width:20px;height:20px;margin-top:5px;accent-color:var(--ai)}
+.checks .why{display:block;font-size:.82rem;color:var(--muted)}
+.score{display:grid;gap:8px;background:var(--ai-soft);border-radius:12px;padding:14px 16px}
+.score .s{font-family:var(--font-display);font-weight:900;font-size:1.3rem}
+.meter{height:10px;background:var(--surface);border-radius:999px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;background:var(--ai);transition:width .2s}
+
+/* finish */
+.finish{background:var(--surface);border-top:1px solid var(--line)}
+.finish .wrap{padding-block:56px;display:grid;gap:24px}
+.done-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:20px;max-width:46em}
+.big-stamp{width:96px;height:96px;border:3px dashed var(--line);border-radius:50%;display:grid;place-items:center;font:900 1.3rem var(--font-display);color:var(--muted);text-align:center;line-height:1.2}
+.done-card.all .big-stamp{border:3px solid var(--shu);color:var(--shu);transform:rotate(-10deg)}
+.cta{background:var(--ai);color:var(--on-ai);border-radius:16px;padding:22px clamp(18px,3vw,28px);display:grid;gap:10px;max-width:46em}
+.cta h3{font-size:1.25rem}
+.cta a{color:var(--on-ai);font-weight:700}
+.sources ul{margin:0;padding-left:1.2em;display:grid;gap:4px;font-size:.86rem}
+footer.foot{padding-block:24px 40px;font-size:.8rem;color:var(--muted)}
+</style>
+
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap gut">
+    <a class="brand" href="#top">情報セキュリティ対策</a>
+    <div class="kairan" aria-label="回覧板（読んだ章に確認印が押されます）">
+      <span class="kairan-lbl">回覧</span>
+      <div id="cells" style="display:flex;gap:inherit"></div>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap gut">
+    <div>
+      <div class="eyebrow">経営者と社員のための</div>
+      <h1>情報セキュリティ対策</h1>
+      <p class="tag">カタカナのIT用語を、会社の建物と人の動きに置き換えて。</p>
+      <p class="lead">2026年秋、大手企業の情報漏えいが相次ぎました。ニュースの意味から、被害に遭ったときの初動、明日からやることまでを、全8章・約17分で読めるようにまとめました。</p>
+      <a class="start" href="#ch1">第1章から読む <span aria-hidden="true">→</span></a>
+      <div><span class="asof">2026年11月8日時点の公表・報道とIPAの公開資料にもとづいています</span></div>
+    </div>
+    <div class="board" aria-label="この回覧の順番">
+      <div class="board-head"><h2>回覧板</h2><span>読み終えた章に確認印が押されます</span></div>
+      <div id="board-rows" style="display:grid;gap:8px"></div>
+      <p class="board-foot" id="board-foot">全8章　確認印 0 / 8</p>
+    </div>
+  </div>
+</section>
+
+<main>
+
+<!-- 第1章 -->
+<section class="chapter" id="ch1" data-ch="1">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第1章</span><span class="ch-time">約2分</span></div>
+      <h2>いま、何が起きているのか</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>今秋の3つの大きな動きと、経営者が受け取るべき教訓</p>
+    </div>
+    <div class="grid3 wide">
+      <article class="panel inc">
+        <span class="pill">10月21日</span>
+        <h3>PHPの脆弱性</h3>
+        <p>多くのホームページの土台であるPHPに重大な弱点が見つかり、修正版の公開前に情報が流出。ECサイト、金融機関、鉄道会社などがサイトを一時停止しました。</p>
+        <p class="lesson"><b>教訓</b>自社サイトが何で動き、誰が更新するのかを知らなければ、「止めるか、続けるか」も判断できません。</p>
+      </article>
+      <article class="panel inc">
+        <span class="pill">10月21日 公表</span>
+        <h3>GMO「お名前.com デスクトップクラウド」への不正アクセス</h3>
+        <p>8月に侵入され、管理者アカウントを奪われたまま約2か月半気づけませんでした。証券・FX口座のログイン情報などが持ち出された可能性があります。</p>
+        <p class="lesson"><b>教訓</b>2024年にグループ会社が課題を指摘していましたが、代表に届いていませんでした。弱点の報告が経営者に届く仕組みが要ります。</p>
+      </article>
+      <article class="panel inc">
+        <span class="pill">9月〜11月</span>
+        <h3>大手企業で漏えいの公表が相次ぐ</h3>
+        <p>タイムズカー約660万件、ソースネクスト最大約2,252万件、バーガーキング約1,118万件など、数百万〜数千万件規模の公表が続きました。</p>
+        <p class="lesson"><b>教訓</b>入口は「弱点の放置」「ID・パスワードの盗用」「委託先や共通サービス経由」の3つにほぼ集約されます。</p>
+      </article>
+    </div>
+    <div class="block">
+      <p class="callout">11月6日、政府は予備費100億円を充てる「サイバーセキュリティ緊急対策パッケージ」を決めました。情報管理は、いまや経営の要です。</p>
+      <p class="note">件数・経緯は各社の公表・報道によるもので、調査中のものを含みます。</p>
+    </div>
+    <div class="quiz" data-answer="x">
+      <span class="q-lbl">○×クイズ</span>
+      <p class="q">GMOの事件では、侵入から発覚まで数日だった。</p>
+      <div class="btns"><button type="button" data-v="o" aria-pressed="false" aria-label="まる">○</button><button type="button" data-v="x" aria-pressed="false" aria-label="ばつ">×</button></div>
+      <div class="ans" hidden><b></b><span>約2か月半、社内では気づけませんでした。発覚のきっかけは利用者からの問い合わせです。記録（ログ）は「取る」だけでなく、誰かが「見る」必要があります。</span></div>
+    </div>
+    <div class="ch-end" data-end="1"></div>
+    <a class="next" href="#ch2"><span><small>次は 第2章</small><span class="t">IT用語は「会社」に例えればわかる</span></span><span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- 第2章 -->
+<section class="chapter" id="ch2" data-ch="2">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第2章</span><span class="ch-time">約3分</span></div>
+      <h2>IT用語は「会社」に例えればわかる</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>ニュースに出てくる33語の意味を、6つの分類で</p>
+    </div>
+    <div class="slider wide" id="terms">
+      <div class="tabs" role="tablist" aria-label="用語の分類"></div>
+      <div class="track" tabindex="0" aria-label="用語カード"></div>
+      <div class="ctrl"><button type="button" class="prev" aria-label="前のカード">←</button><span class="count"></span><button type="button" class="nxt" aria-label="次のカード">→</button><span class="hint">スワイプでも進めます</span></div>
+    </div>
+    <details class="more">
+      <summary>33語をまとめて一覧表で見る</summary>
+      <div class="inner"><div class="tscroll"><table id="term-table"><thead><tr><th>分類</th><th>用語</th><th>ひとことで</th><th>会社に例えると</th></tr></thead><tbody></tbody></table></div></div>
+    </details>
+    <div class="ch-end" data-end="2"></div>
+    <a class="next" href="#ch3"><span><small>次は 第3章</small><span class="t">通信のしくみ（OSI）を1分で</span></span><span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- 第3章 -->
+<section class="chapter" id="ch3" data-ch="3">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第3章</span><span class="ch-time">約1分</span></div>
+      <h2>通信のしくみ（OSI）を1分で</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>通信を7つの役割に分けて考える理由</p>
+    </div>
+    <div class="block">
+      <p>OSI（Open Systems Interconnection）は、いわば<b>「通信の労働基準法」</b>です。会社ごとに就業規則が違っても労基法という共通ルールで運用できるように、メーカーが違うコンピュータ同士も共通ルールでつながります。</p>
+    </div>
+    <div class="osi wide">
+      <div class="stack" id="stack" role="group" aria-label="7つの階層（押すと説明が切り替わります）"></div>
+      <div class="panel layer-detail" id="layer-detail" aria-live="polite"></div>
+    </div>
+    <div class="block">
+      <p>覚え方は上から<b>「アプセトネデブ」</b>。本質は、通信を7つの役割に分けて、問題がどこにあるかを切り分けることです。労働問題を採用・労働時間・賃金・退職に分けて整理するのと同じです。</p>
+      <p class="note">実際のインターネットは、OSIをもとに整理されたTCP/IPという4層の仕組みで動いています。OSIは「整理のための物差し」です。</p>
+    </div>
+    <div class="ch-end" data-end="3"></div>
+    <a class="next" href="#ch4"><span><small>次は 第4章</small><span class="t">メールは「郵便」。だから狙われる</span></span><span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- 第4章 -->
+<section class="chapter" id="ch4" data-ch="4">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第4章</span><span class="ch-time">約3分</span></div>
+      <h2>メールは「郵便」。だから狙われる</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>メールが狙われやすい理由と、7つの守りの技術</p>
+    </div>
+    <div class="block"><p>メールは、世界中の別々の会社が共通ルールでやりとりする<b>郵便</b>です。性善説で作られたため、なりすまし・のぞき見・改ざんを防ぐ仕組みは、あとから付け足されました。</p></div>
+    <div class="grid3 wide">
+      <div class="panel"><span class="pill">理由1</span><h3 style="font-size:1.1rem">性善説の仕組み</h3><p>差出人欄は自由に書けて、中身ももともとは暗号化されていません。</p></div>
+      <div class="panel"><span class="pill">理由2</span><h3 style="font-size:1.1rem">24時間開いた窓口</h3><p>世界中から手紙を受け付けるので、攻撃者からも常に見えています。</p></div>
+      <div class="panel"><span class="pill">理由3</span><h3 style="font-size:1.1rem">鍵はパスワードだけ</h3><p>盗まれると、過去のメールを読まれ、迷惑メールの送信元（踏み台）にされます。</p></div>
+    </div>
+    <div class="block"><h3>守りの技術を7枚で</h3></div>
+    <div class="slider wide" id="techs">
+      <div class="track" tabindex="0" aria-label="メールの守りの技術"></div>
+      <div class="ctrl"><button type="button" class="prev" aria-label="前のカード">←</button><span class="count"></span><button type="button" class="nxt" aria-label="次のカード">→</button><span class="hint">スワイプでも進めます</span></div>
+    </div>
+    <div class="block">
+      <p class="callout">SPF・DKIM・DMARCは受け取る側が確認しますが、<b>設定するのは送る側</b>です。自社で設定していないと、取引先で迷惑メール扱いになります。試験では「SPF＝IPアドレス」「DKIM＝署名」「S/MIME＝両側で暗号化と署名」がよく問われます。</p>
+    </div>
+    <div class="quiz" data-answer="x">
+      <span class="q-lbl">○×クイズ</span>
+      <p class="q">メールの差出人の名前は、本人しか設定できない。</p>
+      <div class="btns"><button type="button" data-v="o" aria-pressed="false" aria-label="まる">○</button><button type="button" data-v="x" aria-pressed="false" aria-label="ばつ">×</button></div>
+      <div class="ans" hidden><b></b><span>表示名はいくらでも偽れます。受け取ったら、名前ではなくメールアドレスそのものを確認しましょう。</span></div>
+    </div>
+    <div class="grid2 wide">
+      <div class="panel">
+        <h3 style="font-size:1.1rem">使う人の心がけ</h3>
+        <ul class="list">
+          <li><b>テキスト形式で読む：</b>HTMLメールは、見た目の文字と実際のリンク先を別にできます。</li>
+          <li><b>受け取るとき：</b>表示名ではなく、アドレスそのものを確認する。</li>
+          <li><b>送るとき：</b>宛先・CC・BCCを確認する。誤送信は漏えいの主な原因のひとつです。</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.1rem">利用者の責任は「区画の鍵」</h3>
+        <p>レンタルサーバーやクラウドでは、サーバーの修理は事業者の仕事。利用者が守るのは次の4つです。</p>
+        <ul class="list">
+          <li>パスワードを使い回さず、2段階認証を有効にする</li>
+          <li>使っていないメールアドレスを残さない</li>
+          <li>メールソフトを暗号化（SSL/TLS）の設定で使う</li>
+          <li>同じサーバーのホームページ（WordPressなど）とPHPを最新に保つ</li>
+        </ul>
+      </div>
+    </div>
+    <details class="more">
+      <summary>メールサーバーはどこにある？ 主な6種類</summary>
+      <div class="inner">
+        <div class="tscroll"><table><thead><tr><th>種類</th><th>例</th><th>特徴</th></tr></thead><tbody>
+          <tr><td>無料のWebメール</td><td>Gmail（Google）、Outlook.com（Microsoft）、Yahoo!メール、iCloudメール</td><td>個人が無料で使える</td></tr>
+          <tr><td>プロバイダのメール</td><td>OCN（NTT系）、au one net（KDDI）、Yahoo! BB（ソフトバンク）など</td><td>ネット回線の契約に付いてくる</td></tr>
+          <tr><td>携帯会社のメール</td><td>docomo.ne.jp、au.com、softbank.ne.jp</td><td>スマホの契約に付いてくる</td></tr>
+          <tr><td>レンタルサーバー</td><td>さくら、エックスサーバー、ロリポップ、ConoHa WINGなど</td><td>独自ドメインで使う</td></tr>
+          <tr><td>企業向けクラウド</td><td>Google Workspace、Microsoft 365</td><td>会社のドメインのまま、中身はGoogleやMicrosoft</td></tr>
+          <tr><td>自前のサーバー</td><td>大企業、大学、役所など</td><td>自分で建てて自分で管理する</td></tr>
+        </tbody></table></div>
+        <p class="note">「Outlook」には、Microsoftのメールサービス（郵便局）と、どのメールも読めるメールソフト（郵便受けを見に行く道具）の2つの意味があります。</p>
+      </div>
+    </details>
+    <div class="ch-end" data-end="4"></div>
+    <a class="next" href="#ch5"><span><small>次は 第5章</small><span class="t">メーリングリストとLINEは、何が違う？</span></span><span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- 第5章 -->
+<section class="chapter" id="ch5" data-ch="5">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第5章</span><span class="ch-time">約2分</span></div>
+      <h2>メーリングリストとLINEは、何が違う？</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>「コピー係」と「同じ部屋」の違いと、誤爆・ループの防ぎ方</p>
+    </div>
+    <div class="ill wide">
+      <figure>
+        <svg viewBox="0 0 340 230" role="img" aria-label="メーリングリストは、コピー係が人数分のコピーを各自のポストへ配る">
+          <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#566074"/></marker></defs>
+          <g fill="none" stroke="#566074" stroke-width="1.4">
+            <rect x="16" y="98" width="48" height="32" rx="3" fill="#FFFFFF"/><path d="M16 98 L40 116 L64 98"/>
+            <path d="M68 114 H96" marker-end="url(#ar)"/>
+            <path d="M190 106 C214 106 214 40 240 40" marker-end="url(#ar)"/>
+            <path d="M190 110 C216 110 216 92 240 92" marker-end="url(#ar)"/>
+            <path d="M190 118 C216 118 216 144 240 144" marker-end="url(#ar)"/>
+            <path d="M190 122 C214 122 214 196 240 196" marker-end="url(#ar)"/>
+          </g>
+          <rect x="100" y="88" width="90" height="52" rx="8" fill="#E6ECF7" stroke="#2B4A84" stroke-width="1.6"/>
+          <text x="145" y="110" text-anchor="middle" font-size="14" font-weight="700" fill="#18202D">コピー係</text>
+          <text x="145" y="128" text-anchor="middle" font-size="10.5" fill="#566074">MLのアドレス</text>
+          <text x="40" y="150" text-anchor="middle" font-size="11" fill="#566074">投稿1通</text>
+          <g font-size="11.5" fill="#18202D">
+            <rect x="244" y="24" width="80" height="32" rx="5" fill="#FFFFFF" stroke="#B3341F" stroke-width="1.6"/><text x="284" y="44" text-anchor="middle">Gmail</text>
+            <rect x="244" y="76" width="80" height="32" rx="5" fill="#FFFFFF" stroke="#566074"/><text x="284" y="96" text-anchor="middle">OCN</text>
+            <rect x="244" y="128" width="80" height="32" rx="5" fill="#FFFFFF" stroke="#566074"/><text x="284" y="148" text-anchor="middle">携帯会社</text>
+            <rect x="244" y="180" width="80" height="32" rx="5" fill="#FFFFFF" stroke="#566074"/><text x="284" y="200" text-anchor="middle">事務所</text>
+          </g>
+          <rect x="290" y="12" width="40" height="18" rx="4" fill="#B3341F"/><text x="310" y="25" text-anchor="middle" font-size="10.5" font-weight="700" fill="#FFFFFF">迷惑</text>
+        </svg>
+        <figcaption><b>メーリングリスト＝コピー係</b>100人なら100通のコピーが、100か所のポストへ届きます。各ポストの管理人（メール会社）が別々に検査するので、迷惑メールに入る人と入らない人が分かれます。</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 340 230" role="img" aria-label="LINEグループは、全員が同じ部屋の壁を見に行く">
+          <rect x="16" y="14" width="308" height="202" rx="12" fill="#FFFFFF" stroke="#566074" stroke-width="1.4"/>
+          <text x="30" y="36" font-size="11" fill="#566074">運営会社の建物の中の1つの部屋</text>
+          <rect x="105" y="52" width="130" height="64" rx="6" fill="#E6ECF7" stroke="#2B4A84" stroke-width="1.6"/>
+          <text x="170" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#18202D">トークの壁</text>
+          <text x="170" y="100" text-anchor="middle" font-size="10.5" fill="#566074">書き込みは1か所だけ</text>
+          <g fill="#FFFFFF" stroke="#2B4A84" stroke-width="1.5">
+            <circle cx="70" cy="160" r="10"/><path d="M54 190 a16 14 0 0 1 32 0"/>
+            <circle cx="130" cy="160" r="10"/><path d="M114 190 a16 14 0 0 1 32 0"/>
+            <circle cx="190" cy="160" r="10"/><path d="M174 190 a16 14 0 0 1 32 0"/>
+            <circle cx="250" cy="160" r="10"/><path d="M234 190 a16 14 0 0 1 32 0"/>
+          </g>
+          <g stroke="#D8DDE7" stroke-width="1.2" stroke-dasharray="3 3"><path d="M74 148 L130 118"/><path d="M132 148 L158 118"/><path d="M188 148 L182 118"/><path d="M246 148 L210 118"/></g>
+        </svg>
+        <figcaption><b>LINEグループ＝同じ部屋</b>メッセージはどこへも配達されず、全員が同じ壁を見に来ます。だから送信取り消しができ、既読の数も見え、迷惑フォルダもありません。</figcaption>
+      </figure>
+    </div>
+    <div class="tscroll wide"><table><thead><tr><th>項目</th><th>メーリングリスト</th><th>LINEグループ</th></tr></thead><tbody>
+      <tr><td>迷惑メール判定</td><td>受け取る人のメール会社ごとに判定される</td><td>なし</td></tr>
+      <tr><td>送信の取り消し</td><td>できない</td><td>できる</td></tr>
+      <tr><td>既読</td><td>わからない</td><td>既読の数が見える</td></tr>
+      <tr><td>メンバー</td><td>名簿は管理者だけが持つ</td><td>一覧が見える</td></tr>
+      <tr><td>参加の条件</td><td>メールアドレスがあればよい</td><td>LINEのアカウントが必要</td></tr>
+      <tr><td>記録</td><td>各自の手元に残り、検索も保存もできる</td><td>運営会社のサーバーにある</td></tr>
+    </tbody></table></div>
+    <div class="quiz" data-answer="x">
+      <span class="q-lbl">○×クイズ</span>
+      <p class="q">メーリングリストのメールは、全員が同じ1通を見ている。</p>
+      <div class="btns"><button type="button" data-v="o" aria-pressed="false" aria-label="まる">○</button><button type="button" data-v="x" aria-pressed="false" aria-label="ばつ">×</button></div>
+      <div class="ans" hidden><b></b><span>人数分のコピーが、一人ひとりのポストに届いています。送ったら回収できず、相手の数だけコピーが残ります。</span></div>
+    </div>
+    <div class="grid3 wide">
+      <div class="panel">
+        <span class="pill">誤爆の原因</span>
+        <h3 style="font-size:1.08rem">投稿できる人と返信先は、設定しだい</h3>
+        <ul class="list">
+          <li>投稿は「会員なら誰でも」「決められた人だけ（配信専用）」「承認制」のどれか。</li>
+          <li>会員の判定は差出人アドレスだけ。偽ったアドレスで投稿されることもある。</li>
+          <li>返信先がメーリングリストだと、「返信」だけで全員に届く。<b>送信前に宛先欄を見る。</b></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <span class="pill">増え続けるメール</span>
+        <h3 style="font-size:1.08rem">返信・転送の繰り返しとメールループ</h3>
+        <ul class="list">
+          <li>返信を重ねると、件名と引用が積み重なる。引用の奥の個人情報に注意。</li>
+          <li>不在通知や自動転送は、合わせ鏡のようにメールを増やすことがある。</li>
+          <li>不在通知はメーリングリストに返さない設定にする。</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <span class="pill">使い分け</span>
+        <h3 style="font-size:1.08rem">正式なお知らせはメール、日常はチャット</h3>
+        <ul class="list">
+          <li>記録に残す配布はメール、急ぎの連絡はチャットが向いている。</li>
+          <li>業務のチャットは、個人のLINEより組織で管理できるもの（LINE WORKS、Slackなど）を。</li>
+          <li>届きにくさが続くなら、Googleグループや一斉配信サービスへの移行も検討。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="ch-end" data-end="5"></div>
+    <a class="next" href="#ch6"><span><small>次は 第6章</small><span class="t">バックアップは「3-2-1」</span></span><span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- 第6章 -->
+<section class="chapter" id="ch6" data-ch="6">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第6章</span><span class="ch-time">約2分</span></div>
+      <h2>バックアップは「3-2-1」</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>IPA（情報処理推進機構）が示すバックアップの基本</p>
+    </div>
+    <div class="block"><p>IPAは、バックアップを<b>被害を受けた後に「復旧する」ための対策</b>と位置づけています。組織向けの「情報セキュリティ10大脅威 2026」では、ランサム攻撃による被害が1位です。</p></div>
+    <div class="rule wide">
+      <div><span class="num">3</span><p><b>データは本体を含めて3つ以上持つ</b></p></div>
+      <div><span class="num">2</span><p><b>2種類の異なる媒体に保管する</b></p></div>
+      <div><span class="num">1</span><p><b>そのうち1つは別の場所に置く</b></p></div>
+    </div>
+    <div class="block"><p class="muted">IPAの例は「パソコン本体＋バックアップ用の記憶装置＋クラウド」。書類に例えると、原本・社内金庫のコピー・別の建物のコピーです。同じ部屋のコピーは、火事になれば一緒に燃えます。</p></div>
+    <div class="quiz" data-answer="x">
+      <span class="q-lbl">○×クイズ</span>
+      <p class="q">社内のNASにバックアップしていれば、ランサムウェア対策は万全だ。</p>
+      <div class="btns"><button type="button" data-v="o" aria-pressed="false" aria-label="まる">○</button><button type="button" data-v="x" aria-pressed="false" aria-label="ばつ">×</button></div>
+      <div class="ans" hidden><b></b><span>パソコンがNASの「鍵」を持っていると、NASも一緒に暗号化されます。別の場所にもう1つ（3-2-1の「1」）が必要です。</span></div>
+    </div>
+    <div class="grid2 wide">
+      <div class="panel">
+        <h3 style="font-size:1.1rem">日頃の運用</h3>
+        <ul class="list">
+          <li><b>定期的に取る。</b>頻度はファイルの更新頻度と媒体の特徴で決める。</li>
+          <li><b>取るときだけつなぐ。</b>つないだままの外付けHDDは一緒に暗号化される。</li>
+          <li><b>取り方を決めておく。</b>オンラインバックアップも選択肢。</li>
+          <li><b>安全な場所に保管する。</b></li>
+          <li><b>戻せるか定期的に試す。</b>「リストアできなければ意味がない」（IPA）。</li>
+          <li><b>複数の媒体に取る。</b>取得中はほかの操作をしない。</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.1rem">組織向けの一段上の対策</h3>
+        <ul class="list">
+          <li><b>取得の日時と頻度</b>を検討して運用する。</li>
+          <li><b>WORM機能：</b>一度書いたら書き換えられない保存方式で、バックアップの改ざんを防ぐ。</li>
+          <li><b>クリーンビルド：</b>まっさらな状態から作り直す手順を決めておく。</li>
+          <li><b>復旧訓練：</b>避難訓練と同じで、やってみないと本番では動けない。</li>
+        </ul>
+        <p class="note">情報セキュリティ10大脅威 2026［組織編］より</p>
+      </div>
+    </div>
+    <details class="more">
+      <summary>媒体の選び方とWindowsの標準機能</summary>
+      <div class="inner"><div class="tscroll"><table><thead><tr><th>区分</th><th>内容</th><th>注意点</th></tr></thead><tbody>
+        <tr><td>編集しないファイル（写真など）</td><td>DVD-R、BD-Rなど書き換えできない光学メディア</td><td>入れたままでも暗号化の影響を受けない</td></tr>
+        <tr><td>編集するファイル（文書など）</td><td>USBメモリ、メモリーカード、外付けHDD</td><td>バックアップの時だけつなぐ</td></tr>
+        <tr><td>Windowsバックアップ</td><td>設定やデータをOneDriveに保存</td><td>容量の範囲内</td></tr>
+        <tr><td>ファイル履歴</td><td>重要なファイルを定期的に保存</td><td>故障時はWindowsの再インストールが必要</td></tr>
+        <tr><td>システムイメージ</td><td>パソコン全体を丸ごと保存</td><td>HDD故障やランサムウェア対策に有効</td></tr>
+      </tbody></table></div>
+      <p class="note">媒体の例は2017年のIPA資料、Windowsの機能は「情報セキュリティ6か条 解説編」（2026年9月版）によります。</p></div>
+    </details>
+    <div class="block">
+      <h3>事故が起きたら</h3>
+      <ol class="list">
+        <li>電源を切るなど、不用意な操作で記録を消さない</li>
+        <li>原因を調べ、修正プログラムの適用・設定変更・機器の入れ替え・データの復元で修復する</li>
+        <li>正しく修復できたことを確かめてから、システムを復旧する</li>
+        <li>適切に運用されてきたバックアップから戻す</li>
+      </ol>
+      <p class="note">IPA「中小企業のためのセキュリティインシデント対応の手引き」（2026年6月）ほか</p>
+    </div>
+    <div class="motto"><div class="m"><span>定期的に取る</span><span>普段は切り離す</span><span>戻せるか試す</span></div><small>この言い回しは本ページによるまとめで、IPAの表現ではありません</small></div>
+    <div class="ch-end" data-end="6"></div>
+    <a class="next" href="#ch7"><span><small>次は 第7章</small><span class="t">もしものとき、最初にやること</span></span><span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- 第7章 -->
+<section class="chapter" id="ch7" data-ch="7">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第7章</span><span class="ch-time">約2分</span></div>
+      <h2>もしものとき、最初にやること</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>メールサーバー・パソコン・スマホ・NASが被害に遭ったときの影響と初動</p>
+    </div>
+    <div class="block"><p>被害は、やられた機器の外へ広がります。パソコンが持っている<b>「鍵」</b>（パスワード、ログイン状態、共有フォルダへの接続）が、ほかの機器や取引先に被害を広げます。</p></div>
+    <div class="rtabs wide" id="rtabs">
+      <div class="tabs" role="tablist" aria-label="被害を受けたもの">
+        <button type="button" class="tab" role="tab" id="rt-1" aria-controls="rp-1" aria-selected="true">パソコンの感染</button>
+        <button type="button" class="tab" role="tab" id="rt-2" aria-controls="rp-2" aria-selected="false">メールサーバー</button>
+        <button type="button" class="tab" role="tab" id="rt-3" aria-controls="rp-3" aria-selected="false">テザリングのスマホ</button>
+        <button type="button" class="tab" role="tab" id="rt-4" aria-controls="rp-4" aria-selected="false">同じネットワークのNAS</button>
+      </div>
+      <div class="rpanel" role="tabpanel" id="rp-1" aria-labelledby="rt-1">
+        <div class="cols">
+          <div><h4>何が起きるか</h4><ul class="list">
+            <li>メールのパスワード、ログイン中の状態、アドレス帳、手元のメールが盗まれる</li>
+            <li>盗んだ本物の過去のやりとりに「Re:」を装い、取引先へウイルスが送られる（Emotet型）</li>
+            <li>あなたのアカウントが迷惑メールの送信元にされる</li></ul></div>
+          <div><h4>最初にやること</h4><ol class="list">
+            <li>LANケーブルを抜き、Wi-Fiを切る（電源は専門家の指示を待つ）</li>
+            <li>感染していない端末から、パスワードを変える</li>
+            <li>「すべての端末からログアウト」を実行する</li>
+            <li>見覚えのない自動転送の設定がないか確認する</li>
+            <li>取引先に電話などで「私を名乗る不審メールに注意」と伝える</li>
+            <li>個人情報の漏えいのおそれがあれば、報告と本人通知を検討する</li></ol></div>
+        </div>
+      </div>
+      <div class="rpanel" role="tabpanel" id="rp-2" aria-labelledby="rt-2" hidden>
+        <div class="cols">
+          <div><h4>何が起きるか</h4><ul class="list">
+            <li>送受信が止まり、サーバー上の過去のメール（IMAP・Webメール）が読めなくなる</li>
+            <li>止まっている間のメールは、送った側が数日間（標準的な設定で最大5日程度）再送を試み、期限後は差出人にエラーが返る</li>
+            <li>盗まれたメールが公開されれば、個人情報の漏えいになる</li>
+            <li>乗っ取られたアカウントから、本物のアドレスで「振込先変更」などの偽メールが出る</li></ul></div>
+          <div><h4>最初にやること</h4><ol class="list">
+            <li>電話やチャットなど、メール以外の連絡網で関係者に知らせる</li>
+            <li>業者に復旧を依頼する（受け取りの再開が先、過去分はバックアップから）</li>
+            <li>漏えいの有無を確認し、必要なら個人情報保護委員会へ報告する</li></ol>
+            <p class="note" style="margin-top:8px">POPで手元に取り込んだメールは残ります。大事なメールはサーバーの外にもコピーを。</p></div>
+        </div>
+      </div>
+      <div class="rpanel" role="tabpanel" id="rp-3" aria-labelledby="rt-3" hidden>
+        <div class="cols">
+          <div><h4>何が起きるか</h4><ul class="list">
+            <li>パソコン向けのウイルスはスマホでは動きにくく、本体の感染の可能性は低い</li>
+            <li>USBで「ファイル転送」や「このコンピュータを信頼」を許していたら、写真やデータ、パソコン上のスマホのバックアップが盗まれたおそれがある</li>
+            <li>一番の弱点は「同じアカウント」。スマホが無事でも、アカウントは一蓮托生</li></ul></div>
+          <div><h4>最初にやること</h4><ol class="list">
+            <li>テザリングをオフにし、USBケーブルを抜く（これが隔離）</li>
+            <li>スマホから、パソコンで使っていたアカウントのパスワード変更とログアウト</li>
+            <li>パソコン版LINEは、スマホの「ログイン中の端末」からログアウト</li>
+            <li>テザリングのパスワードを変える</li></ol></div>
+        </div>
+      </div>
+      <div class="rpanel" role="tabpanel" id="rp-4" aria-labelledby="rt-4" hidden>
+        <div class="cols">
+          <div><h4>何が起きるか</h4><ul class="list">
+            <li>パソコンが鍵を持つ共有キャビネット（ネットワークドライブ）ごと暗号化される。Wi-Fiか有線かは関係ない</li>
+            <li>ブラウザに保存した管理者パスワードが盗まれ、復元用の記録まで消されることがある</li>
+            <li>NASがバックアップ先なら、原本と同時に失う</li></ul></div>
+          <div><h4>最初にやること</h4><ol class="list">
+            <li>感染パソコンとNASのLANケーブルを抜く</li>
+            <li>安全な端末から、異常な拡張子・脅迫文のファイル・ログを確認する</li>
+            <li>スナップショットが残っていれば、暗号化前に戻せる可能性がある</li>
+            <li>管理者パスワードを変え、見覚えのないユーザーがいないか確認する</li></ol></div>
+        </div>
+      </div>
+    </div>
+    <div class="quiz" data-answer="x">
+      <span class="q-lbl">○×クイズ</span>
+      <p class="q">2段階認証をしていれば、パソコンがウイルスに感染してもメールは安全だ。</p>
+      <div class="btns"><button type="button" data-v="o" aria-pressed="false" aria-label="まる">○</button><button type="button" data-v="x" aria-pressed="false" aria-label="ばつ">×</button></div>
+      <div class="ans" hidden><b></b><span>ログイン中の状態（セッション）を盗まれると、入口の確認を通らずに入られます。だから「すべての端末からログアウト」が初動に入っています。</span></div>
+    </div>
+    <div class="ch-end" data-end="7"></div>
+    <a class="next" href="#ch8"><span><small>次は 最終章</small><span class="t">今日からやること</span></span><span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- 第8章 -->
+<section class="chapter" id="ch8" data-ch="8">
+  <div class="wrap gut">
+    <div class="ch-head">
+      <div class="ch-meta"><span class="ch-no">第8章</span><span class="ch-time">約2分</span></div>
+      <h2>今日からやること</h2>
+      <p class="ch-learn"><b>この章でわかること：</b>個人の5つの対策、経営者のチェックリスト、就業規則と教育</p>
+    </div>
+    <div class="quiz" data-answer="x">
+      <span class="q-lbl">○×クイズ</span>
+      <p class="q">受信箱を空にしておけば、乗っ取られても被害はない。</p>
+      <div class="btns"><button type="button" data-v="o" aria-pressed="false" aria-label="まる">○</button><button type="button" data-v="x" aria-pressed="false" aria-label="ばつ">×</button></div>
+      <div class="ans" hidden><b></b><span>空でも、なりすまし送信、これから届くメールの盗み見、こっそり転送の設定ができてしまいます。送ったメールは相手の数だけコピーも残ります。まず守るのは「鍵」です。</span></div>
+    </div>
+    <div class="block">
+      <h3>個人でできる5つのこと（優先順）</h3>
+      <ol class="list">
+        <li><b>鍵を守る：</b>パスワードを使い回さず、2段階認証を有効にする</li>
+        <li><b>転送設定を確認する：</b>見覚えのない転送先がないか、ときどき見る</li>
+        <li><b>溜め込まずに整理する：</b>不要なメールは削除し、ごみ箱も空に。残すべきものはメールの外の安全な場所へ移してバックアップ。添付は保存先へ移し、メールからは削除</li>
+        <li><b>送る段階で守る：</b>個人情報は本文や添付で送らず、期限・アクセス制限付きの共有リンクを使う</li>
+        <li><b>マイナンバーを残さない：</b>手続きが終わり保存期間も過ぎたら、速やかな削除・廃棄が法律で求められている</li>
+      </ol>
+    </div>
+    <div class="grid2 wide" style="align-items:start">
+      <div class="panel">
+        <h3 style="font-size:1.12rem">経営者がまず確かめたい8つのこと</h3>
+        <ul class="checks" id="checks">
+          <li><label><input type="checkbox" id="k1"><span>自社のホームページやシステムが何で動き、誰が保守しているか言える<span class="why">PHPの件：止める判断は、ここを知らないとできない</span></span></label></li>
+          <li><label><input type="checkbox" id="k2"><span>管理者アカウントの持ち主を把握し、多要素認証を設定している<span class="why">GMOの件：管理者アカウントを奪われ、被害が全体に</span></span></label></li>
+          <li><label><input type="checkbox" id="k3"><span>退職・異動の日に、IDとアクセス権限を止める手順がある<span class="why">使われていないIDは、気づかれにくい入口になる</span></span></label></li>
+          <li><label><input type="checkbox" id="k4"><span>ログを誰が、いつ確認するか決まっている<span class="why">GMOの件：約2か月半、侵入に気づけなかった</span></span></label></li>
+          <li><label><input type="checkbox" id="k5"><span>弱点の指摘や現場の不安が、経営者まで届くルートがある<span class="why">GMOの件：2024年の指摘が代表に届いていなかった</span></span></label></li>
+          <li><label><input type="checkbox" id="k6"><span>委託先の安全管理を、契約と定期的な確認で押さえている<span class="why">個人情報保護法でも、委託先の監督は会社の義務</span></span></label></li>
+          <li><label><input type="checkbox" id="k7"><span>バックアップを別の場所に保管し、戻せるか試している<span class="why">ランサムウェアからの復旧の最後の頼み</span></span></label></li>
+          <li><label><input type="checkbox" id="k8"><span>事故のときの連絡先と報告期限、メールが止まったときの連絡手段を一覧にしている<span class="why">漏えい等の報告は、速報がおおむね3〜5日以内</span></span></label></li>
+        </ul>
+        <div class="score" aria-live="polite"><span class="s" id="score-s">8項目中 0 項目</span><div class="meter"><span id="score-bar"></span></div><span id="score-msg" class="note">チェックを入れると、ここに結果が出ます。チェックはこのブラウザにだけ保存されます。</span></div>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.12rem">就業規則と教育でできること</h3>
+        <p>情報漏えいの入口の多くは、パスワードの使い回し、偽メールへの反応、私物の持ち込みなど、人の行動から生まれます。</p>
+        <ul class="list">
+          <li><b>就業規則・情報管理規程：</b>持ち出し禁止、私物のUSBやスマホの扱い、生成AIに入力してよい情報を決める</li>
+          <li><b>秘密保持誓約書：</b>入社時と退職時に取り交わす</li>
+          <li><b>懲戒規程：</b>情報の持ち出しやルール違反を、懲戒の対象として明記する</li>
+          <li><b>入退社の手続き：</b>退職日に、IDとアクセス権限を確実に止める</li>
+          <li><b>教育・訓練：</b>偽メールの見分け方と、「おかしい」と思ったときの報告先を全員が知っている状態にする</li>
+        </ul>
+      </div>
+    </div>
+    <div class="ch-end" data-end="8"></div>
+  </div>
+</section>
+
+</main>
+
+<section class="finish">
+  <div class="wrap gut">
+    <div class="done-card" id="done-card">
+      <div class="big-stamp" id="big-stamp">回覧<br>中</div>
+      <div><p class="big-line" id="done-title">あと8章で読了です</p><p class="muted" id="done-sub">読み終えた章には、上の回覧板に確認印が押されます。</p></div>
+    </div>
+    <div class="block">
+      <h2 style="font-size:clamp(1.4rem,3.6vw,1.8rem)">まとめ</h2>
+      <ul class="list">
+        <li>情報管理は「IT担当者だけの仕事」ではなく、経営そのものの課題です。</li>
+        <li>カタカナの用語も、会社の建物と人の動きに置き換えれば難しくありません。</li>
+        <li>まず守るのは「鍵」。そして「定期的に取る・普段は切り離す・戻せるか試す」のバックアップ。</li>
+      </ul>
+    </div>
+    <div class="cta">
+      <h3>就業規則・情報管理規程の見直しはご相談ください</h3>
+      <p>情報管理規程、生成AIの利用ルール、秘密保持誓約書、懲戒規程など、人の側の対策の整備をお手伝いします。</p>
+      <p>おぶすま社会保険労務士・行政書士事務所　<a href="https://cocodesmile.com/" target="_blank" rel="noopener">事務所ホームページ</a></p>
+    </div>
+    <details class="more sources">
+      <summary>参考資料（2026年11月8日時点）</summary>
+      <div class="inner"><ul>
+        <li><a href="https://www.ipa.go.jp/security/anshin/measures/everyday.html" target="_blank" rel="noopener">IPA：日常における情報セキュリティ対策</a></li>
+        <li><a href="https://www.ipa.go.jp/security/guide/sme/ug65p90000019cbk-att/jouhousecurity6kajou(kaisetsuhen)_r16.pdf" target="_blank" rel="noopener">IPA：情報セキュリティ6か条 解説編（2026年9月）</a></li>
+        <li><a href="https://www.ipa.go.jp/security/10threats/omgdg50000008fi8-att/kaisetsu_2026_soshiki.pdf" target="_blank" rel="noopener">IPA：情報セキュリティ10大脅威2026 解説書［組織編］</a></li>
+        <li><a href="https://www.ipa.go.jp/security/guide/sme/ug65p90000019cbk-att/sme_guideline_v4.0_app_incidenttebiki.pdf" target="_blank" rel="noopener">IPA：中小企業のためのセキュリティインシデント対応の手引き（2026年6月）</a></li>
+        <li><a href="https://www.ipa.go.jp/security/anshin/ps6vr70000011jnw-att/000057314.pdf" target="_blank" rel="noopener">IPA：テクニカルウォッチ「ランサムウェアの脅威と対策」（2017年）</a></li>
+        <li><a href="https://group.gmo/info/alert/2026102703/" target="_blank" rel="noopener">GMOインターネットグループ：「お名前.com デスクトップクラウド」への不正アクセスに関する現在の対応について（第10報）</a></li>
+        <li><a href="https://pivo-te.co.jp/article/1357" target="_blank" rel="noopener">株式会社ピボーテ：GMO不正アクセスをわかりやすく図解解説</a></li>
+        <li><a href="https://scan.netsecurity.ne.jp/article/2026/10/26/56564.html" target="_blank" rel="noopener">ScanNetSecurity：「お名前.com デスクトップクラウド」に不正アクセス</a></li>
+        <li><a href="https://www.sbbit.jp/article/fj/187962" target="_blank" rel="noopener">ビジネス＋IT：GMO不正アクセス、サーバを止めてもパスワードを変えても被害が続く</a></li>
+        <li><a href="https://www.leadplus.co.jp/blog/php" target="_blank" rel="noopener">リードプラス：PHPに緊急の脆弱性｜企業サイトの対応手順</a></li>
+        <li><a href="https://www.aeyescan.jp/blog-2/php-vulnerability-lessons/" target="_blank" rel="noopener">AeyeScan：世界を止めたPHP問題</a></li>
+        <li><a href="https://www.nikkei.com/article/DGXZQOUA230TO0T21C26A0000000/" target="_blank" rel="noopener">日本経済新聞：PHP脆弱性、厚労省関係は31サイトで一時停止</a></li>
+        <li><a href="https://atmarkit.itmedia.co.jp/ait/articles/2609/30/news038.html" target="_blank" rel="noopener">＠IT：タイムズカーで不正アクセス 約660万件の情報が流出</a></li>
+        <li><a href="https://scan.netsecurity.ne.jp/article/2026/10/20/56515.html" target="_blank" rel="noopener">ScanNetSecurity：ソースネクストに不正アクセス</a></li>
+        <li><a href="https://scan.netsecurity.ne.jp/article/2026/10/19/56498.html" target="_blank" rel="noopener">ScanNetSecurity：バーガーキング公式アプリに不正アクセス</a></li>
+        <li><a href="https://atmarkit.itmedia.co.jp/ait/articles/2610/09/news036.html" target="_blank" rel="noopener">＠IT：IDCフロンティアにランサムウェア、495社・自治体に影響</a></li>
+        <li><a href="https://www.watch.impress.co.jp/docs/news/2154548.html" target="_blank" rel="noopener">Impress Watch：政府、「サイバーセキュリティ緊急対策パッケージ」策定</a></li>
+      </ul></div>
+    </details>
+    <footer class="foot">© おぶすま社会保険労務士・行政書士事務所　｜　2026年11月8日時点の情報です。調査の進展により内容が変わる可能性があります。</footer>
+  </div>
+</section>
+
+<script>
+(function(){
+  var CH = [
+    {n:1,t:'いま、何が起きているのか',m:2},
+    {n:2,t:'IT用語は「会社」に例えればわかる',m:3},
+    {n:3,t:'通信のしくみ（OSI）を1分で',m:1},
+    {n:4,t:'メールは「郵便」。だから狙われる',m:3},
+    {n:5,t:'メーリングリストとLINEは、何が違う？',m:2},
+    {n:6,t:'バックアップは「3-2-1」',m:2},
+    {n:7,t:'もしものとき、最初にやること',m:2},
+    {n:8,t:'今日からやること',m:2}
+  ];
+  var KEY = 'sec-lp-read', KEYC = 'sec-lp-checks';
+  function load(k){ try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch(e){ return {}; } }
+  function save(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  var read = load(KEY);
+
+  function el(tag, cls, html){ var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function go(n){ var t = document.getElementById('ch' + n); if (t) t.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
+
+  // 回覧板（ヘッダーとヒーロー）
+  var cells = document.getElementById('cells'), rows = document.getElementById('board-rows');
+  CH.forEach(function(c){
+    var b = el('button', 'cell', String(c.n)); b.type = 'button'; b.dataset.n = c.n; b.title = '第' + c.n + '章 ' + c.t; b.setAttribute('aria-label', '第' + c.n + '章へ移動');
+    b.addEventListener('click', function(){ go(c.n); }); cells.appendChild(b);
+    var a = el('a', 'row'); a.href = '#ch' + c.n; a.dataset.n = c.n;
+    a.innerHTML = '<span class="no">第' + c.n + '章</span><span class="t"></span><span class="min">約' + c.m + '分</span><span class="stamp" aria-hidden="true">済</span>';
+    a.querySelector('.t').textContent = c.t; rows.appendChild(a);
+  });
+  function paint(){
+    var cnt = 0;
+    CH.forEach(function(c){
+      var d = !!read[c.n]; if (d) cnt++;
+      document.querySelector('.cell[data-n="' + c.n + '"]').classList.toggle('done', d);
+      document.querySelector('.row[data-n="' + c.n + '"]').classList.toggle('done', d);
+    });
+    document.getElementById('board-foot').textContent = '全8章　確認印 ' + cnt + ' / 8';
+    var card = document.getElementById('done-card');
+    card.classList.toggle('all', cnt === 8);
+    document.getElementById('big-stamp').innerHTML = cnt === 8 ? '読了' : '回覧<br>中';
+    document.getElementById('done-title').textContent = cnt === 8 ? '全8章、読了です。おつかれさまでした' : 'あと' + (8 - cnt) + '章で読了です';
+    document.getElementById('done-sub').textContent = cnt === 8 ? '最後に、第8章のチェックリストで自社の状態を確かめてみてください。' : '印のない章は、上の回覧板の番号から開けます。';
+  }
+  function mark(n){ if (!read[n]) { read[n] = 1; save(KEY, read); paint(); } }
+  paint();
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) mark(Number(e.target.dataset.end)); }); }, {rootMargin: '0px 0px -10% 0px'});
+    document.querySelectorAll('.ch-end').forEach(function(x){ io.observe(x); });
+    var io2 = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { var n = e.target.dataset.ch; document.querySelectorAll('.cell').forEach(function(c){ c.classList.toggle('here', c.dataset.n === n); }); } }); }, {rootMargin: '-45% 0px -50% 0px'});
+    document.querySelectorAll('.chapter').forEach(function(x){ io2.observe(x); });
+  }
+  document.querySelectorAll('.next').forEach(function(a){ a.addEventListener('click', function(){ var ch = a.closest('.chapter'); if (ch) mark(Number(ch.dataset.ch)); }); });
+
+  // 進捗バー
+  var bar = document.getElementById('bar'), ticking = false;
+  function prog(){ var h = document.documentElement; var max = h.scrollHeight - h.clientHeight; bar.style.width = (max > 0 ? Math.min(100, h.scrollTop / max * 100) : 0) + '%'; ticking = false; }
+  window.addEventListener('scroll', function(){ if (!ticking) { ticking = true; requestAnimationFrame(prog); } }, {passive: true});
+  prog();
+
+  // スライダー共通
+  function slider(root){
+    var track = root.querySelector('.track'), prev = root.querySelector('.prev'), next = root.querySelector('.nxt'), count = root.querySelector('.count');
+    function idx(){ var cs = track.children; if (!cs.length) return 0; var w = cs[0].getBoundingClientRect().width + 14; return Math.round(track.scrollLeft / w); }
+    function upd(){ var n = track.children.length, i = Math.min(idx(), n - 1); count.textContent = (n ? i + 1 : 0) + ' / ' + n; prev.disabled = i <= 0; next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4; }
+    function step(d){ var cs = track.children; if (!cs.length) return; var w = cs[0].getBoundingClientRect().width + 14; track.scrollBy({left: d * w, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
+    prev.addEventListener('click', function(){ step(-1); }); next.addEventListener('click', function(){ step(1); });
+    track.addEventListener('scroll', function(){ requestAnimationFrame(upd); }, {passive: true});
+    track.addEventListener('keydown', function(e){ if (e.key === 'ArrowRight') { step(1); e.preventDefault(); } if (e.key === 'ArrowLeft') { step(-1); e.preventDefault(); } });
+    window.addEventListener('resize', upd);
+    return upd;
+  }
+
+  // 第2章 用語
+  var CATS = ['入口になる弱点','攻撃の手口','本人確認と権限','見張りと記録','システムの仕組み','起きたときの対応'];
+  var T = [
+    [0,'脆弱性','Vulnerability','ソフトやシステムの作りに潜む、セキュリティ上の弱点や欠陥','鍵が壊れている裏口。泥棒は壊れた裏口を探して回っている'],
+    [0,'パッチ（修正プログラム）','Patch / Update','脆弱性をふさぐために開発元が配る修正。アップデートとも','壊れた鍵の交換部品。取り付けなければ裏口は開いたまま'],
+    [0,'ゼロデイ','Zero-day','修正が出る前に、弱点が知れ渡ったり悪用されたりする状態','鍵の欠陥が知れ渡ったのに、交換部品がまだ届かない'],
+    [0,'サポート終了（EOL）','End of Life','メーカーが修正や更新の提供をやめた状態','製造中止で、部品も修理も受けられない古い鍵'],
+    [0,'設定ミス','Misconfiguration','設定の誤りで、外から見える・入れる状態になっていること','立派な鍵があるのに、書庫の扉を開けっ放し'],
+    [1,'不正アクセス','Unauthorized Access','権限のない者が、他人のIDや弱点を使って入り込むこと','拾った社員証や壊れた裏口から、勝手に社内へ入る'],
+    [1,'マルウェア','Malware','悪意のあるソフトの総称。ウイルスやランサムウェアも含む','社員になりすまして入り込み、中から盗む・壊す者'],
+    [1,'ランサムウェア','Ransomware','データを暗号化して身代金を要求。「払わなければ公開」と二重に脅すのが主流','キャビネットに勝手に鍵をかけ、開けてほしければ金を払えと脅す'],
+    [1,'フィッシング','Phishing','実在の会社を装った偽メール・偽サイトで、IDやパスワードをだまし取る','取引先を名乗る電話で、金庫の暗証番号を聞き出す'],
+    [1,'リモートコード実行（RCE）','Remote Code Execution','外部から、他人のコンピュータに好きな命令を実行させられる弱点','電話一本で、社内のコピー機や金庫を操作される'],
+    [1,'サプライチェーン攻撃','Supply Chain Attack','守りの弱い委託先や取引先を経由して侵入する','出入りの業者が持つ合鍵を盗んで入る'],
+    [2,'ID・パスワード','Credentials','誰かを示すIDと、本人であることを証明するパスワード','社員証と暗証番号'],
+    [2,'多要素認証（MFA）','Multi-Factor Authentication','パスワードに加え、スマホのコードや指紋など別の種類の確認を組み合わせる','社員証＋暗証番号＋顔認証'],
+    [2,'管理者アカウント','Administrator Account','システム全体を操作できる、最も強い権限のID','すべての部屋と金庫を開けられるマスターキー'],
+    [2,'アクセス権限・最小権限','Least Privilege','誰が何をどこまで扱えるかの設定。必要な分だけ与える','人事ファイルの閲覧権限'],
+    [2,'セッション','Session','ログインしてから終了するまでの「ログイン中」の状態','来客バッジ。暗証番号を変えても、回収しなければ出入りできる'],
+    [3,'ログ','Log','誰が、いつ、どこから、何をしたかの自動の記録','タイムカードと入退室記録。見ていなければ気づけない'],
+    [3,'ファイアウォール','Firewall','社内と外部の間で、通してよい通信を振り分ける','正門の守衛'],
+    [3,'WAF（ワフ）','Web Application Firewall','Webサイトに届く依頼の中身を調べ、攻撃らしいものを止める','ホームページの受付係'],
+    [3,'脆弱性診断','Security Assessment','攻撃者の目線で弱点を調べて報告する。調べる専門家がホワイトハッカー','防犯の専門家による点検。直した後の再点検までがセット'],
+    [4,'サーバー','Server','24時間動き、データの保管やサービスの提供をするコンピュータ','書庫と受付窓口を兼ねた部屋'],
+    [4,'クラウド','Cloud','事業者のサーバーをインターネット経由で借りて使う形','貸し倉庫。建物の警備は倉庫会社、区画の鍵は借りる側'],
+    [4,'PHP','PHP','ホームページを動かすプログラミング言語。WordPressなどの土台','建物の建築工法。同じ工法の建物すべてに同じ欠陥が出る'],
+    [4,'CMS・WordPress','Content Management System','専門知識がなくてもホームページを更新できる仕組み','建物の内装。内装を新しくしても工法の欠陥は直らない'],
+    [4,'API','Application Programming Interface','システム同士がデータをやりとりする決められた窓口','問い合わせ専用窓口。確認が甘いと大量に聞き出される'],
+    [4,'リモートデスクトップ','Remote Desktop','離れた場所のパソコンを、手元から操作する仕組み','自宅から、本社の自分の机を窓越しに操作する'],
+    [4,'ドライブ共有','Drive Redirection','接続中に、手元のパソコンのファイルを接続先から読み書きできる機能','本社の机を操作するついでに、自宅の書棚の鍵も預けてしまう'],
+    [4,'VPN','Virtual Private Network','会社と外部を結ぶ、暗号化された専用の通り道','鍵付きの地下通路。入口の鍵が古いと侵入される'],
+    [4,'NAS（ナス）','Network Attached Storage','社内ネットワークにつなぐ、ファイル共有用の保管機器','社員みんなで使う共有キャビネット'],
+    [5,'インシデント','Incident','セキュリティ上の事故や、その疑いがある出来事','職場の事故。直後の初動で被害の大きさが変わる'],
+    [5,'ネットワーク遮断（隔離）','Isolation','感染が疑われる機器を、ネットワークから切り離す','感染症が疑われる人に、まず別室へ移ってもらう'],
+    [5,'バックアップ','Backup','データの複製を、元とは別の場所に保管する','重要書類のコピーを、別の建物の金庫にしまう'],
+    [5,'漏えい等の報告','Breach Notification','一定の個人データ漏えいで、個人情報保護委員会への報告と本人通知が義務。速報はおおむね3〜5日以内','労災が起きたら労基署に届け出るのと同じ']
+  ];
+  var tbody = document.querySelector('#term-table tbody');
+  T.forEach(function(r){ var tr = document.createElement('tr'); [CATS[r[0]], r[1], r[3], r[4]].forEach(function(v){ var td = document.createElement('td'); td.textContent = v; tr.appendChild(td); }); tbody.appendChild(tr); });
+  var termRoot = document.getElementById('terms'), termTrack = termRoot.querySelector('.track'), termTabs = termRoot.querySelector('.tabs');
+  var termUpd = slider(termRoot);
+  function showCat(i){
+    termTrack.innerHTML = '';
+    T.filter(function(r){ return r[0] === i; }).forEach(function(r){
+      var c = el('article', 'card');
+      c.innerHTML = '<span class="c-cat"></span><h3></h3><span class="c-en"></span><dl><dt>ひとことで</dt><dd></dd></dl><p class="c-like"><b>会社に例えると</b><span></span></p>';
+      c.querySelector('.c-cat').textContent = CATS[i]; c.querySelector('h3').textContent = r[1]; c.querySelector('.c-en').textContent = r[2];
+      c.querySelector('dd').textContent = r[3]; c.querySelector('.c-like span').textContent = r[4];
+      termTrack.appendChild(c);
+    });
+    termTrack.scrollLeft = 0;
+    termTabs.querySelectorAll('.tab').forEach(function(b, j){ b.setAttribute('aria-selected', String(j === i)); });
+    termUpd();
+  }
+  CATS.forEach(function(c, i){
+    var n = T.filter(function(r){ return r[0] === i; }).length;
+    var b = el('button', 'tab'); b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = c + '（' + n + '）';
+    b.addEventListener('click', function(){ showCat(i); }); termTabs.appendChild(b);
+  });
+  showCat(0);
+
+  // 第3章 OSI
+  var L = [
+    [7,'アプリケーション層','利用者が使うサービス','届出書の中身','HTTP、SMTP（メール）、DNS','メールが送れない'],
+    [6,'プレゼンテーション層','データの形式・文字コード・暗号化','所定の様式・日本語で書く','文字コード、JPEG',''],
+    [5,'セッション層','通信の開始から終了までの管理','送付から受理までのやりとり','役割を押さえれば十分',''],
+    [4,'トランスポート層','確実に届ける・届け先を指定する','書留で、担当部署あてに送る','TCP、UDP、ポート番号','特定のポートだけ通らない'],
+    [3,'ネットワーク層','宛先までの経路を選ぶ','住所から配達ルートを決める','IP、ルータ','社外のサーバーに届かない'],
+    [2,'データリンク層','隣の機器まで受け渡す','最寄りの郵便局までの受け渡し','イーサネット、Wi-Fi、スイッチ','Wi-Fiにつながらない'],
+    [1,'物理層','電気信号・光・電波','道路・トラック','LANケーブル、ハブ','LANケーブルが抜けている']
+  ];
+  var stack = document.getElementById('stack'), detail = document.getElementById('layer-detail');
+  function showLayer(k){
+    var r = L[k];
+    stack.querySelectorAll('.layer').forEach(function(b, j){ b.setAttribute('aria-pressed', String(j === k)); });
+    detail.innerHTML = '<span class="pill" style="background:var(--ai-soft);color:var(--ai)"></span><h3></h3><dl><div><dt>役割</dt><dd></dd></div><div><dt>届出書の郵送に例えると</dt><dd></dd></div><div><dt>代表例</dt><dd></dd></div>' + (r[5] ? '<div><dt>こんな症状なら、この層を疑う</dt><dd></dd></div>' : '') + '</dl>';
+    detail.querySelector('.pill').textContent = '第' + r[0] + '層';
+    detail.querySelector('h3').textContent = r[1];
+    var dds = detail.querySelectorAll('dd'); dds[0].textContent = r[2]; dds[1].textContent = r[3]; dds[2].textContent = r[4]; if (r[5]) dds[3].textContent = r[5];
+  }
+  L.forEach(function(r, k){
+    var b = el('button', 'layer'); b.type = 'button'; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<span class="n"></span><span><span class="nm"></span><br><span class="note"></span></span>';
+    b.querySelector('.n').textContent = r[0]; b.querySelector('.nm').textContent = r[1]; b.querySelector('.note').textContent = r[2];
+    b.addEventListener('click', function(){ showLayer(k); }); stack.appendChild(b);
+  });
+  showLayer(0);
+
+  // 第4章 技術スライド
+  var TECH = [
+    ['SMTP-AUTH','送信側','送る人をID・パスワードで確認','社員証を見せないと、発送窓口が使えない'],
+    ['POP before SMTP','送信側（古い方式）','先に受信でログインした人に、しばらく送信を許す','受付で名乗った人だけ、しばらく発送窓口を使える'],
+    ['SPF','受信側が確認（設定は送る側）','送ってきたサーバーのIPアドレス','「当社の郵便はこの局からしか出さない」と公表し、消印と照合する'],
+    ['DKIM','受信側が確認（設定は送る側）','電子署名。途中の書き換えもわかる','会社の角印と割印'],
+    ['DMARC','受信側が確認（宣言は送る側）','SPF・DKIMの結果を表示上の差出人と突き合わせ、不合格のときの扱いを宣言する','「消印や角印が合わない手紙は受け取らないで」という届出'],
+    ['S/MIME','送る人と受け取る人の両側','メールそのものの暗号化と電子署名','封筒に鍵をかけ、実印と印鑑証明を添える'],
+    ['TLS（SMTPS・POP3S・IMAPS）','通信の経路','サーバーとの通り道を暗号化','配送トラックの荷台に鍵。封筒そのものには鍵がない']
+  ];
+  var techRoot = document.getElementById('techs'), techTrack = techRoot.querySelector('.track');
+  TECH.forEach(function(r, i){
+    var c = el('article', 'card');
+    c.innerHTML = '<span class="c-cat"></span><h3></h3><dl><dt>どこで働くか</dt><dd></dd><dt>何を確かめる・守るか</dt><dd></dd></dl><p class="c-like"><b>例えると</b><span></span></p>';
+    c.querySelector('.c-cat').textContent = (i + 1) + ' / ' + TECH.length; c.querySelector('h3').textContent = r[0];
+    var dd = c.querySelectorAll('dd'); dd[0].textContent = r[1]; dd[1].textContent = r[2]; c.querySelector('.c-like span').textContent = r[3];
+    techTrack.appendChild(c);
+  });
+  slider(techRoot)();
+
+  // 第7章 タブ
+  var rt = document.querySelectorAll('#rtabs .tab');
+  rt.forEach(function(b){ b.addEventListener('click', function(){ rt.forEach(function(x){ var on = x === b; x.setAttribute('aria-selected', String(on)); document.getElementById(x.getAttribute('aria-controls')).hidden = !on; }); }); });
+
+  // クイズ
+  document.querySelectorAll('.quiz').forEach(function(q){
+    var ans = q.querySelector('.ans');
+    q.querySelectorAll('.btns button').forEach(function(b){
+      b.addEventListener('click', function(){
+        q.querySelectorAll('.btns button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+        var ok = b.dataset.v === q.dataset.answer;
+        ans.hidden = false; ans.className = 'ans ' + (ok ? 'ok' : 'ng');
+        ans.querySelector('b').textContent = (ok ? '正解。' : '残念、') + '答えは「' + (q.dataset.answer === 'o' ? '○' : '×') + '」です。';
+      });
+    });
+  });
+
+  // チェックリスト
+  var saved = load(KEYC), boxes = document.querySelectorAll('#checks input');
+  function score(){
+    var n = 0; boxes.forEach(function(b){ if (b.checked) n++; });
+    document.getElementById('score-s').textContent = '8項目中 ' + n + ' 項目';
+    document.getElementById('score-bar').style.width = (n / 8 * 100) + '%';
+    var touched = Object.keys(saved).length > 0;
+    document.getElementById('score-msg').textContent = !touched ? 'チェックを入れると、ここに結果が出ます。チェックはこのブラウザにだけ保存されます。'
+      : n === 8 ? 'すべてそろっています。年に一度は見直しましょう。'
+      : n >= 5 ? 'あと少しです。チェックのない項目から手を付けましょう。'
+      : 'まずは「管理者アカウントと多要素認証」と「バックアップ」から始めましょう。';
+  }
+  boxes.forEach(function(b){ b.checked = !!saved[b.id]; b.addEventListener('change', function(){ saved[b.id] = b.checked; save(KEYC, saved); score(); }); });
+  score();
+})();
+</script>
+
+</body>
+</html>
